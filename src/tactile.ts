@@ -6,41 +6,50 @@
  * file "LICENSE" for more information.
  */
 
-'use strict'
+type vec6 = [number,number,number,number,number,number]
 
-const EdgeShape = {
-	J : 10001,
-	U : 10002,
-	S : 10003,
-	I : 10004,
+type vec4 = [number,number,number,number]
+
+type point = {x:number, y:number};
+
+
+enum EdgeShape  {
+	J = 10001,
+	U = 10002,
+	S = 10003,
+	I = 10004,
 };
 
 const numTypes = 81;
 
-function mul( A, B ) 
-{
-	if( B.hasOwnProperty( 'x' ) ) {
-		// Matrix * Point
-		return { 
-			x : A[0]*B.x + A[1]*B.y + A[2],
-			y : A[3]*B.x + A[4]*B.y + A[5] };
-	} else {
-		// Matrix * Matrix
-		return [A[0]*B[0] + A[1]*B[3], 
-			A[0]*B[1] + A[1]*B[4],
-			A[0]*B[2] + A[1]*B[5] + A[2],
 
-			A[3]*B[0] + A[4]*B[3], 
-			A[3]*B[1] + A[4]*B[4],
-			A[3]*B[2] + A[4]*B[5] + A[5]];
-	}
+function multiplyVectors( A:vec6, B:vec6 )
+{
+	// Matrix * Matrix
+	return <vec6>[A[0]*B[0] + A[1]*B[3], 
+		A[0]*B[1] + A[1]*B[4],
+		A[0]*B[2] + A[1]*B[5] + A[2],
+
+		A[3]*B[0] + A[4]*B[3], 
+		A[3]*B[1] + A[4]*B[4],
+		A[3]*B[2] + A[4]*B[5] + A[5]];
 };
 
-function matchSeg( p, q )
+function multiplyVecPoint(A:vec6, B:point) : point
 {
-	return [q.x-p.x, p.y-q.y, p.x,  q.y-p.y, q.x-p.x, p.y];
+	// Matrix * Point
+	return  { 
+		x : A[0]*B.x + A[1]*B.y + A[2],
+		y : A[3]*B.x + A[4]*B.y + A[5] };
+}
+
+
+function matchSeg( p:point, q:point )
+{
+	return <vec6>[q.x-p.x, p.y-q.y, p.x,  q.y-p.y, q.x-p.x, p.y];
 };
-'use strict'
+
+type tileType =  1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|36|37|38|39|40|41|42|43|44|45|46|47|49|50|51|52|53|54|55|56|57|58|59|61|62|64|66|67|68|69|71|72|73|74|76|77|78|79|81|82|83|84|85|86|88|90|91|93;
 
 const tilingTypes = [
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 61, 62, 64, 66, 67, 68, 69, 71, 72, 73, 74, 76, 77, 78, 79, 81, 82, 83, 84, 85, 86, 88, 90, 91, 93
@@ -172,7 +181,7 @@ const dp_04 = [ 0.12239750492, 0.5, 0.225335752741, 0.225335752741, 0.5 ];
 const dp_05 = [ 0.12239750492, 0.5, 0.225335752741, 0.625, 0.5 ];
 const dp_06 = [ 0.6, 0.196416770201 ];
 const dp_07 = [ 0.12239750492, 0.5, 0.225335752741 ];
-const dp_08 = [  ];
+const dp_08:number[] = [  ];
 const dp_09 = [ 0.12239750492, 0.225335752741 ];
 const dp_10 = [ 0.12239750492, 0.225335752741, 0.5 ];
 const dp_11 = [ 0.12239750492, 0.225335752741, 0.225335752741 ];
@@ -1846,64 +1855,86 @@ return [
 	}
 
 ];})();
-function makePoint( coeffs, offs, params )
+
+
+function getTileType( id:tileType ){
+	const ttd = tiling_type_data[ id ];
+	if( ttd == null ) throw new Error( "null tile type: " + id );
+	else return ttd;
+}
+
+function makePoint( coeffs:number[], offset:number, params:number[] )
 {
 	let ret = { x : 0.0, y : 0.0 }
 
 	for( let i = 0; i < params.length; ++i ) {
-		ret.x += coeffs[offs+i] * params[i];
-		ret.y += coeffs[offs+params.length+i] * params[i];
+		ret.x += coeffs[offset+i] * params[i];
+		ret.y += coeffs[offset+params.length+i] * params[i];
 	}
 
 	return ret;
 };
 
-function makeMatrix( coeffs, offs, params )
+function makeMatrix( coeffs:number[], offset:number, params:number[] )     
 {
-	let ret = []
+	let ret:number[] = []
 
 	for( let row = 0; row < 2; ++row ) {
 		for( let col = 0; col < 3; ++col ) {
 			let val = 0.0;
 			for( let idx = 0; idx < params.length; ++idx ) {
-				val += coeffs[offs+idx] * params[idx];
+				val += coeffs[offset+idx] * params[idx];
 			}
 			ret.push( val );
-			offs += params.length;
+			offset += params.length;
 		}
 	}
 
-	return ret;
+	return <vec6>ret;
 };
 
-const M_orients = [
+const M_orients:vec6[] = [
 	[1.0, 0.0, 0.0,    0.0, 1.0, 0.0],   // IDENTITY
 	[-1.0, 0.0, 1.0,   0.0, -1.0, 0.0],  // ROT
 	[-1.0, 0.0, 1.0,   0.0, 1.0, 0.0],   // FLIP
 	[1.0, 0.0, 0.0,    0.0, -1.0, 0.0]   // ROFL
 ];
 
-const TSPI_U = [
+const TSPI_U:vec6[] = [
 	[0.5, 0.0, 0.0,    0.0, 0.5, 0.0],
 	[-0.5, 0.0, 1.0,   0.0, 0.5, 0.0]
 ];
 
-const TSPI_S = [
+const TSPI_S:vec6[] = [
 	[0.5, 0.0, 0.0,    0.0, 0.5, 0.0],
 	[-0.5, 0.0, 1.0,   0.0, -0.5, 0.0]
 ];
 
 class IsohedralTiling
 {
-	constructor( tp )
+	tiling_type:tileType;
+	parameters:number[];
+	verts:point[]= [];
+	edges:vec6[]=[];
+	reversals:boolean[]=[];
+	ttd: ReturnType<typeof getTileType>;
+	t1:point={x:0,y:0};
+	t2:point={x:0,y:0};
+	aspects:(vec6|(number[]))[] = [];
+
+	constructor( type:tileType )
 	{
-		this.reset( tp );
+		this.tiling_type = type;
+		this.ttd = getTileType( type );
+		this.parameters = this.ttd.default_params.slice( 0 );
+		this.parameters.push( 1.0 );
+		this.recompute();
 	}
 
-	reset( tp )
+	reset( type:tileType )
 	{
-		this.tiling_type = tp;
-		this.ttd = tiling_type_data[ tp ];
+		this.tiling_type = type;
+		this.ttd = getTileType( type );
 		this.parameters = this.ttd.default_params.slice( 0 );
 		this.parameters.push( 1.0 );
 		this.recompute();
@@ -1930,8 +1961,8 @@ class IsohedralTiling
 			const ro = this.ttd.edge_orientations[2*idx+1];
 			this.reversals.push( fl != ro );
 			this.edges.push( 
-				mul( matchSeg( this.verts[idx], this.verts[(idx+1)%ntv] ),
-				M_orients[2*fl+ro] ) );
+				multiplyVectors( matchSeg( this.verts[idx], this.verts[(idx+1)%ntv] ),
+				M_orients[2*Number(fl)+Number(ro)] ) );
 		}
 
 		// Recompute aspect xforms.
@@ -1959,7 +1990,7 @@ class IsohedralTiling
 		return this.ttd.num_params;
 	}
 
-	setParameters( arr )
+	setParameters( arr:number[] )
 	{
 		if( arr.length == (this.parameters.length-1) ) {
 			this.parameters = arr.slice( 0 );
@@ -1978,7 +2009,7 @@ class IsohedralTiling
 		return this.ttd.num_edge_shapes;
 	}
 
-	getEdgeShape( idx )
+	getEdgeShape( idx:number )
 	{
 		return this.ttd.edge_shapes[ idx ];
 	}
@@ -2016,7 +2047,7 @@ class IsohedralTiling
 				const Ms = (shp == EdgeShape.U) ? TSPI_U : TSPI_S;
 
 				yield {
-					T : mul( this.edges[idx], Ms[indices[0]] ),
+					T : multiplyVectors( this.edges[idx], Ms[indices[0]] ),
 					id : an_id,
 					shape : shp,
 					rev : false,
@@ -2024,7 +2055,7 @@ class IsohedralTiling
 				};
 				
 				yield {
-					T : mul( this.edges[idx], Ms[indices[1]] ),
+					T : multiplyVectors( this.edges[idx], Ms[indices[1]] ),
 					id : an_id,
 					shape : shp,
 					rev : true,
@@ -2039,14 +2070,14 @@ class IsohedralTiling
 		return this.ttd.num_vertices;
 	}
 
-	getVertex( idx )
+	getVertex( idx:number )
 	{
 		return { ...this.verts[ idx ] };
 	}
 
 	vertices()
 	{
-		return this.verts.map( v => ({ ...v }) );
+		return this.verts.map( v => <typeof v>structuredClone( v ) );
 	}
 
 	numAspects()
@@ -2054,9 +2085,9 @@ class IsohedralTiling
 		return this.ttd.num_aspects;
 	}
 	
-	getAspectTransform( idx )
+	getAspectTransform( idx:number )
 	{
-		return [ ...this.aspects[ idx ] ];
+		return structuredClone( this.aspects[ idx ] );     
 	}
 
 	getT1()
@@ -2069,7 +2100,7 @@ class IsohedralTiling
 		return { ...this.t2 };
 	}
 
-	* fillRegionBounds( xmin, ymin, xmax, ymax )
+	* fillRegionBounds( xmin:number, ymin:number, xmax:number, ymax:number )
 	{
 		yield* this.fillRegionQuad(
 			{ x : xmin, y : ymin },
@@ -2078,28 +2109,28 @@ class IsohedralTiling
 			{ x : xmin, y : ymax } );
 	}
 
-	* fillRegionQuad( A, B, C, D )
+	* fillRegionQuad( A:point, B:point, C:point, D:point )
 	{
 		const t1 = this.getT1();
 		const t2 = this.getT2();
 		const ttd = this.ttd;
 		const aspects = this.aspects;
 
-		let last_y;
+		let last_y:number;
 
-		function bc( M, p ) {
+		function bc( M:vec4, p:point ) {
 			return { 
 				x : M[0]*p.x + M[1]*p.y,
 				y : M[2]*p.x + M[3]*p.y };
 		};
 
-		function sampleAtHeight( P, Q, y )
+		function sampleAtHeight( P:point, Q:point, y:number )
 		{
 			const t = (y-P.y)/(Q.y-P.y);
-			return { x : (1.0-t)*P.x + t*Q.x, y : y };
+			return <point> { x : (1.0-t)*P.x + t*Q.x, y };
 		}
 
-		function* doFill( A, B, C, D, do_top )
+		function* doFill( A:point, B:point, C:point, D:point, do_top:boolean )
 		{
 			let x1 = A.x;
 			const dx1 = (D.x-A.x)/(D.y-A.y);
@@ -2146,7 +2177,7 @@ class IsohedralTiling
 			last_y = y;
 		}
 
-		function* fillFixX( A, B, C, D, do_top )
+		function* fillFixX( A:point, B:point, C:point, D:point, do_top:boolean )
 		{
 			if( A.x > B.x ) {
 				yield* doFill( B, A, D, C, do_top );
@@ -2155,7 +2186,7 @@ class IsohedralTiling
 			}
 		}
 			
-		function* fillFixY( A, B, C, D, do_top ) 
+		function* fillFixY( A:point, B:point, C:point, D:point, do_top:boolean ) 
 		{
 			if( A.y > C.y ) {
 				yield* doFill( C, D, A, B, do_top );
@@ -2165,7 +2196,7 @@ class IsohedralTiling
 		}
 
 		const det = 1.0 / (t1.x*t2.y-t2.x*t1.y);
-		const Mbc = [ t2.y * det, -t2.x * det, -t1.y * det, t1.x * det ];
+		const Mbc:vec4 = [ t2.y * det, -t2.x * det, -t1.y * det, t1.x * det ];
 
 		let pts = [ bc( Mbc, A ), bc( Mbc, B ), bc( Mbc, C ), bc( Mbc, D ) ];
 
@@ -2214,7 +2245,7 @@ class IsohedralTiling
 		}
 	}
 	
-	getColour( a, b, asp )
+	getColour( a:number, b:number, asp:number )
 	{
 		const clrg = this.ttd.colouring;
 		const nc = clrg[18];
@@ -2242,6 +2273,11 @@ class IsohedralTiling
 
 export 
 {
+
+	point,
+	vec6,
+	vec4,
+
 	EdgeShape,
 
 	numTypes,
@@ -2249,7 +2285,7 @@ export
 
 	makePoint,
 	makeMatrix,
-	mul,
+	multiplyVectors,
 	matchSeg,
 
 	IsohedralTiling
