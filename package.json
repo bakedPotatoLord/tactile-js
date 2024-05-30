@@ -1,0 +1,35 @@
+{
+  "name": "@bakedpotatolord/tactile-ts",
+  "version": "1.0.0",
+  "description": "TactileJS is a TypeScript library for representing, manipulating, and drawing tilings of the plane.  The tilings all belong to a special class called the _isohedral tilings_. Every isohedral tiling is formed from repeated copies of a single shape, and the pattern of repetition is fairly simple. At the same time, isohedral tilings are very expressive (they form the basis for a lot of the tessellations created by M.C. Escher) and efficient to compute.",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "example": "demo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isohedral/tactile-js.git"
+  },
+  "keywords": [
+    "tiles",
+    "tiling",
+    "geometry",
+    "isohedral"
+  ],
+  "author": "Craig S. Kaplan",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/isohedral/tactile-js/issues"
+  },
+  "homepage": "https://github.com/isohedral/tactile-js#readme",
+  "type": "module",
+  "dependencies": {
+    "bun": "^1.1.10"
+  },
+  "devDependencies": { "bun-types": "latest", "typescript": "^5.4.5" },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "buildLib": "tsc -p tsconfig.buildLib.json"
+  }
+}
